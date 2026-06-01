@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple AI App</title>
+</head>
+<body>
+    <h2>Simple GPT App</h2>
+
+    <button onclick="checkBackend()">Check Backend Connection</button>
+    <p id="backend-status"></p>
+
+    <input type="text" id="input" placeholder="Ask something..." size="50">
+    <button onclick="send()">Ask</button>
+
+    <h3>Response:</h3>
+    <p id="response"></p>
+
+    <script>
+        async function callBackend(path, options = {}) {
+            try {
+                const res = await fetch(path, options);
+
+                if (
+                    res.status === 404 &&
+                    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+                ) {
+                    return fetch(`http://localhost:5000${path}`, options);
+                }
+
+                return res;
+            } catch (error) {
+                return fetch(`http://localhost:5000${path}`, options);
+            }
+        }
+
+        async function checkBackend() {
+            try {
+                const res = await callBackend("/health");
+                const data = await res.json();
+                document.getElementById("backend-status").innerText =
+                    data.status === "connected" ? "Connected" : "Not Connected";
+            } catch (error) {
+                document.getElementById("backend-status").innerText = "Not Connected";
+            }
+        }
+
+        async function send() {
+            const message = document.getElementById("input").value;
+
+            const res = await callBackend("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await res.json();
+            document.getElementById("response").innerText = data.reply || data.error;
+        }
+    </script>
+</body>
+</html>

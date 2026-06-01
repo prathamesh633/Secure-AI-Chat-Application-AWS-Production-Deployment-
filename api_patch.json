@@ -1,0 +1,7 @@
+[
+  {
+    "op": "replace",
+    "path": "/policy",
+    "value": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:us-east-1:YOUR_AWS_ACCOUNT_ID:YOUR_API_GATEWAY_ID/*\"},{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"execute-api:Invoke\",\"Resource\":\"arn:aws:execute-api:us-east-1:YOUR_AWS_ACCOUNT_ID:YOUR_API_GATEWAY_ID/*\",\"Condition\":{\"StringNotEquals\":{\"aws:SourceVpce\":\"YOUR_VPC_ENDPOINT_ID\"}}}]}"
+  }
+]

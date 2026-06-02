@@ -463,7 +463,43 @@ WAF_ARN=$(aws wafv2 create-web-acl \
 
 ---
 
-### Step 11: Deploy Lambda@Edge authentication code
+### Step 11: Set Up Okta / Auth0 OIDC Application
+Before deploying the edge routing logic, you must register a Web Application in your Identity Provider (Okta or Auth0) to obtain credentials.
+
+#### Option A: Okta Configuration
+1. Log in to the **Okta Admin Console**.
+2. Navigate to **Applications** > **Applications** > **Create App Integration**.
+3. Select **OIDC - OpenID Connect** as the Sign-in method, and **Web Application** as the Application Type. Click **Next**.
+4. Configure the following Settings:
+   * **App integration name**: `Secure EKS Chat App`
+   * **Grant Type**: Check **Authorization Code** (this enables the OIDC PKCE flow).
+   * **Sign-in redirect URIs**: `https://YOUR_DOMAIN_NAME/callback` (replace with your custom Route 53 domain).
+   * **Sign-out redirect URIs**: `https://YOUR_DOMAIN_NAME/`
+   * **Assignments**: Select appropriate access controls (e.g., Allow everyone in your organization).
+5. Click **Save**.
+6. Note the following generated values:
+   * **Client ID**
+   * **Client Secret**
+   * **Okta Domain** / **Issuer URL** (e.g., `https://your-okta-domain.okta.com/oauth2/default`)
+
+#### Option B: Auth0 Configuration
+1. Log in to the **Auth0 Dashboard**.
+2. Navigate to **Applications** > **Applications** > **Create Application**.
+3. Name your application (e.g., `Secure EKS Chat App`) and select **Regular Web Applications**. Click **Create**.
+4. Navigate to the **Settings** tab and configure:
+   * **Allowed Callback URIs**: `https://YOUR_DOMAIN_NAME/callback`
+   * **Allowed Logout URIs**: `https://YOUR_DOMAIN_NAME/`
+   * **Allowed Web Origins**: `https://YOUR_DOMAIN_NAME`
+5. Scroll down to **Token Endpoint Authentication Method** and ensure it is set to **Post** or **Basic**.
+6. Click **Save Changes**.
+7. Note the following credentials:
+   * **Client ID**
+   * **Client Secret**
+   * **Domain** / **Issuer URL** (e.g., `https://your-auth0-domain.us.auth0.com/`)
+
+---
+
+### Step 12: Deploy Lambda@Edge authentication code
 This handles our edge-level OIDC authorization PKCE validation logic.
 
 1. Create execution role for Lambda:
@@ -507,7 +543,7 @@ VERSION_ARN=$(aws lambda publish-version --function-name cloudfront-auth-lambda 
 
 ---
 
-### Step 12: Configure CloudFront CDN Distribution
+### Step 13: Configure CloudFront CDN Distribution
 We tie the VPC Origin, ACM certificate, and Lambda@Edge version together.
 
 1. Create a `distribution-config.json` containing:
@@ -516,7 +552,7 @@ We tie the VPC Origin, ACM certificate, and Lambda@Edge version together.
   "CallerReference": "eks-private-app",
   "Aliases": {
     "Quantity": 1,
-    "Items": ["app.yourdomain.com"]
+    "Items": ["YOUR_DOMAIN_NAME"]
   },
   "Origins": {
     "Quantity": 1,
@@ -560,7 +596,7 @@ aws cloudfront create-distribution --distribution-config file://distribution-con
 
 ---
 
-### Step 13: Configure Route 53 DNS & Delegation
+### Step 14: Configure Route 53 DNS & Delegation
 We point our domain to Route 53 and map our custom subdomain alias.
 
 1. Create the Route 53 Hosted Zone:

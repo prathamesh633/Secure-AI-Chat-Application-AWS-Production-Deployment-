@@ -1,10 +1,8 @@
-# CLIENT HANDOVER DOCUMENT: Zero-Trust Private EKS & Edge Security Infrastructure
+# Private EKS & Edge Security Infrastructure
 
 ---
 
 ## 1. Project Overview & Objectives
-
-This handover document defines the deployment, request routing, and maintenance operations of the enterprise-grade AI Chat Application infrastructure.
 
 The core objective is to deliver a **Zero-Trust networking architecture** on AWS:
 *   **Zero Public Workloads**: No EKS worker nodes, databases, or API handlers are exposed to the public internet. All application resources reside in non-routable private subnets.
